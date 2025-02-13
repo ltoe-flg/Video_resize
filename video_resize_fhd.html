@@ -66,7 +66,9 @@
     <a href="dummy" download class="dlink" id="dlbtn" style="display:none">動画を保存</a>
     <br>
     動画をリサイズします(FHD)  
-    ※ファイルを選択して画像が表示されてから”Re-size"を一回押してください、ボタンの色が元に戻ると"動画を保存”ボタンが表示されます、ボタンを押すと保存されます。元の動画には影響ありません。<br>
+    ※ファイルを選択して画像が表示されてから”Re-size"を一回押してください、
+    ボタンの色が元に戻ると"動画を保存”ボタンが表示されます、
+    ボタンを押すと保存されます。元の動画には影響ありません。<br>
     何かエラーが出たらブラウザを更新してください。<br>
     ※PCは"応答がありません”とメッセージが表示されますが、放置してかまいません、終了したらメッセージは消えます<br>
     ※処理後の動画ファイルに音声はありません！！(そのうち対応するかも)<br>
@@ -87,15 +89,20 @@
         import sys
         import tempfile
         from pyscript import when, display
-        from pyscript.web import img, page, video, a
+        from pyscript.web import img, page, video
 
-        b64_header='data:video/mp4;base64,'
+        b64_header = 'data:video/mp4;base64,'
         @when("click", "#button")
         def click_handler(event):
+            dl = page['a']
             my_input=page["video"]
+            fb = page["input"]
             img_binary = base64.b64decode(my_input[0].src[len(b64_header):])
             img_b64 = mresize(img_binary)
-            dl = page['a']
+            in_name = fb.value[0]
+            name_arr = in_name.split('\\')
+            out_name = name_arr[-1].replace('.','_fhd.')
+            dl[1].download = out_name
             dl[1].href = b64_header + img_b64
             dl[1].style = "display:inline"
             
@@ -133,10 +140,12 @@
     <script>
         const fileup = (e) => {
             const img = document.getElementById('img');
+            const dlb = document.getElementById('dlbtn');
             const reader = new FileReader();
             reader.onloadend = () => {
                 img.src = reader.result;
                 img.video.load();
+                dlb.style = "display:none";
             }
             reader.readAsDataURL(e.files[0]);
         }
