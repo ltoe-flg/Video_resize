@@ -65,7 +65,7 @@
     <a href="#" class="btn" id="button">Re-size</a>
     <a href="dummy" download class="dlink" id="dlbtn" style="display:none">動画を保存</a>
     <br>
-    動画をリサイズします(720p)  
+    動画をリサイズします(FHD)  
     ※ファイルを選択して画像が表示されてから”Re-size"を一回押してください、ボタンの色が元に戻ると"動画を保存”ボタンが表示されます、ボタンを押すと保存されます。元の動画には影響ありません。<br>
     何かエラーが出たらブラウザを更新してください。<br>
     ※PCは"応答がありません”とメッセージが表示されますが、放置してかまいません、終了したらメッセージは消えます<br>
@@ -107,7 +107,7 @@
             width = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
             height = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
             fps = cap.get(cv.CAP_PROP_FPS)
-            ratio = 720/height
+            ratio = 1080/height
         
             fourcc = cv.VideoWriter_fourcc('m','p','4','v')
         
