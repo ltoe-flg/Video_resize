@@ -1,0 +1,144 @@
+<html lang="ja">
+
+<head>
+    <!-- Recommended meta tags -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!-- PyScript CSS -->
+    <link rel="stylesheet" href="https://pyscript.net/releases/2024.11.1/core.css">
+    <!-- This script tag bootstraps PyScript -->
+    <script type="module" src="https://pyscript.net/releases/2024.11.1/core.js"></script>
+    <style>
+        img,
+        picture, 
+        video {
+            max-width: 50%;
+        }
+
+        .file-button{ 
+            // 「選択されていません（選択後はファイル名）」のスタイル
+            font-size: 35px;
+        }
+
+        .file-button::file-selector-button {
+            // 「ファイルを選択」ボタンのスタイル
+            font-weight: bold;
+            color: black;
+            background: PaleTurquoise;
+            font-size: 50px;
+            border: 0;
+            border-radius: 10em;
+            padding: 8px 16px;
+            text-align: center;
+        }
+        .btn {
+            width: 2000px;
+            height: 100px;
+            font-size: 35px;
+            text-align: center;
+            padding: 20px 30px;
+            background-color: PaleTurquoise;
+            display: inline;
+            text-decoration: none;
+            color: black;
+            border-radius: 7px;
+        }
+        .dlink {
+            width: 2000px;
+            height: 100px;
+            font-size: 35px;
+            text-align: center;
+            padding: 20px 30px;
+            background-color: PaleTurquoise;
+            text-decoration: none;
+            color: black;
+            border-radius: 7px;
+        }
+        .btn.btn:active{
+            background: rgb(172, 172, 172);
+        }
+    </style>
+</head>
+
+<body>
+    <input name="myfile" type="file" accept=".mp4,.mov" onchange="fileup(this)" class="file-button"/>
+    <a href="#" class="btn" id="button">Re-size</a>
+    <a href="dummy" download class="dlink" id="dlbtn" style="display:none">動画を保存</a>
+    <br>
+    動画をリサイズします(720p)  
+    ※ファイルを選択して画像が表示されてから”Re-size"を一回押してください、ボタンの色が元に戻ると"動画を保存”ボタンが表示されます、ボタンを押すと保存されます。元の動画には影響ありません。<br>
+    何かエラーが出たらブラウザを更新してください。<br>
+    <hr>
+    <div>
+        <video id="img" src="" type="video/mp4"></video>
+    </div>
+    <py-config>
+    {
+        "packages" : ["opencv-python","numpy"]
+    }
+    </py-config>
+    <py-script>
+        import cv2 as cv
+        import numpy as np
+        import base64
+        from io import BytesIO
+        import sys
+        import tempfile
+        from pyscript import when, display
+        from pyscript.web import img, page, video, a
+
+        b64_header='data:video/mp4;base64,'
+        @when("click", "#button")
+        def click_handler(event):
+            my_input=page["video"]
+            img_binary = base64.b64decode(my_input[0].src[len(b64_header):])
+            img_b64 = mresize(img_binary)
+            dl = page['a']
+            dl[1].href = b64_header + img_b64
+            dl[1].style = "display:inline"
+            
+        def mresize(bdata):
+            with tempfile.NamedTemporaryFile(mode='wb') as tmpf:
+                tmpf.write(bdata)
+                cap = cv.VideoCapture(tmpf.name)
+            
+            width = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
+            height = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
+            fps = cap.get(cv.CAP_PROP_FPS)
+            ratio = 720/height
+        
+            fourcc = cv.VideoWriter_fourcc('m','p','4','v')
+        
+            with tempfile.TemporaryDirectory() as tmpd:
+                writer = cv.VideoWriter(tmpd + '/tmp.mp4', fourcc, fps, (int(width * ratio), int(height * ratio)))
+        
+                while True:
+                    ret, frame = cap.read()
+                    if not ret:
+                        break
+                    frame = cv.resize(frame, (int(width * ratio), int(height * ratio)))
+                    writer.write(frame)
+        
+                writer.release()
+                cap.release()
+                with open(tmpd + '/tmp.mp4', mode='rb') as fh:
+                    buf = fh.read()
+            
+            v_out = base64.b64encode(buf).decode('ascii')
+            return v_out
+
+    </py-script>
+    <script>
+        const fileup = (e) => {
+            const img = document.getElementById('img');
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                img.src = reader.result;
+                img.video.load();
+            }
+            reader.readAsDataURL(e.files[0]);
+        }
+    </script>
+</body>
+
+</html>
