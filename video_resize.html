@@ -65,6 +65,9 @@
     <a href="#" class="btn" id="button">Re-size</a>
     <a href="dummy" download class="dlink" id="dlbtn" style="display:none">動画を保存</a>
     <br>
+    <input name="radio" type="radio" value="720p" checked/><label>720p</label>
+    <input name="radio" type="radio" value="FHD"/><label>FHD</label><br>
+
     動画をリサイズします(720p)  
     ※ファイルを選択して画像が表示されてから”Re-size"を一回押してください、
     ボタンの色が元に戻ると"動画を保存”ボタンが表示されます、
@@ -110,11 +113,20 @@
             with tempfile.NamedTemporaryFile(mode='wb') as tmpf:
                 tmpf.write(bdata)
                 cap = cv.VideoCapture(tmpf.name)
-            
+
+            btn = page["input"]
+            if btn[1].checked:
+                res=720
+            elif btn[2].checked:
+                res=1080
+        
             width = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
             height = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
             fps = cap.get(cv.CAP_PROP_FPS)
-            ratio = 720/height
+            if height < width:
+                ratio = res/height
+            else:
+                ratio = res/width
         
             fourcc = cv.VideoWriter_fourcc('m','p','4','v')
         
